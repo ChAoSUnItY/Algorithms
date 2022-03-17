@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+int tmp = 0;
+
 void insert(RBTree** root, RBTree* t, int data) {
     if (t->data == -1) {
         t->data = data;
@@ -25,7 +27,7 @@ void insert(RBTree** root, RBTree* t, int data) {
 };
 
 void delete(RBTree** root, RBTree* t, int data) {
-#define swap(x, y) int tmp = x; x = y; y = tmp; 
+#define swap(x, y) tmp = x; x = y; y = tmp; 
 
     if (t->data == -1) {
         return; // No data to be deleted
@@ -140,7 +142,51 @@ void deleteAfter(RBTree** root, RBTree* t) {
             }
         }
     } else {
-        
+        if (t->parent->black_num == 1) {
+            if (t->parent->left->black_num == 1) { // B\B/B
+                RBTree* right_root = t->parent->left;
+                
+                if (right_root->left || right_root->right) {
+                    if (!right_root->left) {
+                        _rotation(root, right_root->right, right_root);
+                    }
+
+                    _rotation(root, t->parent, right_root);
+
+                    if (t->parent->left) t->parent->left->black_num = 0;
+                    if (t->parent->parent->left) t->parent->parent->left->black_num = 1;
+                    deleteAfter(root, t->parent);
+                } else {
+                    deleteAfter(root, t->parent);
+                }
+            } else { // B\B/R
+                _rotation(root, t->parent, t->parent->right);
+
+                t->parent->black_num = 0;
+                t->parent->parent->black_num = 1;
+                deleteAfter(root, t);
+            }
+        } else { // B\R\B
+            RBTree* right_root = t->parent->left;
+                
+            if (right_root->left || right_root->right) {
+                if (!right_root->left) {
+                    _rotation(root, right_root->right, right_root);
+                }
+
+                _rotation(root, t->parent, right_root);
+
+                t->parent->parent->black_num = 0;
+
+                if (t->parent->left) t->parent->left->black_num = 0;
+                if (t->parent->parent->left) t->parent->parent->left->black_num = 1;
+                deleteAfter(root, t->parent);
+            } else {
+                t->parent->black_num = 1;
+                t->parent->left->black_num = 0;
+                deleteAfter(root, t->parent);
+            }
+        }
     }
 }
 

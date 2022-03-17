@@ -24,9 +24,16 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    int true_length = random_list_gen(&random_list, (length > MAX_LENGTH) ? MAX_LENGTH : length, 0, range);
+
+    int true_length = 0;
     /*int a[10] = {122,288,268,458,647,363,328,272,284,702};*/
-    // int a[10] = {1,5,2,8,9,7,6,3,4,10};
+#ifdef DEBUG1
+    int a[10] = {1,5,2,8,9,7,6,3,4,10};
+    random_list = &a;
+    true_length = 10;
+#else
+    true_length = random_list_gen(&random_list, (length > MAX_LENGTH) ? MAX_LENGTH : length, 0, range);
+#endif
 
     for (int i = 0; i < true_length; i++) {
     // for (int i = 0; i < 10; i++) {
@@ -39,7 +46,8 @@ int main(int argc, char* argv[]) {
 
     traversal(t);
 
-    free(random_list);
+    delete(&t, t, 4);
+
     tree_free(t);
 }
 
