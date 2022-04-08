@@ -40,15 +40,29 @@ int main(int argc, char* argv[]) {
         // insert(&t, t, a[i]);
         insert(&t, t, random_list[i]);
         /*printf("==================\n");*/
-        /*traversal(t);*/
+        // traversal(t);
         /*printf("==================\n");*/
     }
 
+#ifdef DEBUG1
+    traversal(t);
+    printf("==============================\n");
+    delete(&t, t, 8); // delete cond 4
+    traversal(t);
+    printf("==============================\n");
+    delete(&t, t, 5); // delete cond 1
+    traversal(t);
+    printf("==============================\n");
+    delete(&t, t, 4); // delete cond 1
+    traversal(t);
+    printf("==============================\n");
+#else
     traversal(t);
 
     delete(&t, t, 4);
 
     tree_free(t);
+#endif
 }
 
 

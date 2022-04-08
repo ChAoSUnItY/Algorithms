@@ -13,7 +13,13 @@ typedef struct rbtree {
 
 void insert(RBTree**, RBTree*, int);
 void delete(RBTree**, RBTree*, int);
-void after_delete(RBTree**, RBTree*);
+void judge_delete_handle(RBTree **root, RBTree *t);
+void BBB_handle(RBTree **root, RBTree *t);
+void BRB_handle(RBTree **root, RBTree *t);
+void BBR_handle(RBTree **root, RBTree *t);
+RBTree *get_close_nephew(RBTree *t);
+RBTree *get_remote_nephew(RBTree *t);
+RBTree *get_sibling(RBTree *t);
 void traversal(RBTree*);
 void tree_init(RBTree**, int);
 void tree_free(RBTree*);
