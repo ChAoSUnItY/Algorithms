@@ -8,23 +8,26 @@
 #define MAX_LENGTH 10000
 #define DEFAULT_LENGTH 16
 #define DEFAULT_RANGE 1000
+#define DEFAULT_DEGREE 2
 
 int main(int argc, char* argv[]) {
     int* random_list;
     int length = DEFAULT_LENGTH;
     int range = DEFAULT_RANGE;
-    RBTree* t;
-    tree_init(&t, 1);
+    int degree = DEFAULT_DEGREE;
 
     for (int i = 1; i < argc ; i++) {
         if (strcmp(argv[i], "-n") == 0) {
             length = atoi(argv[++i]);
         } else if (strcmp(argv[i], "-r") == 0) {
             range = atoi(argv[++i]);
+        } else if (strcmp(argv[i], "-d") == 0) {
+            degree =  atoi(argv[++i]);
         }
     }
 
-
+    BTree* t;
+    tree_init(&t, degree);
     int true_length = 0;
     /*int a[10] = {122,288,268,458,647,363,328,272,284,702};*/
 #ifdef DEBUG1
