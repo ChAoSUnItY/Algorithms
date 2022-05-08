@@ -9,10 +9,11 @@
 #define MID(d) d - 1
 
 void _traversal(Node *);
+int binary_search(int*, int, int, int);
 
 void insert(BTree **root, BTree *t, int data)
 {
-    int pos = bs(t->keys, 0, t->key_len, data);
+    int pos = binary_search(t->keys, 0, t->key_len, data);
 
     if (t->is_leaf) {
         // append
@@ -59,15 +60,15 @@ void split_child(BTree **root, BTree *t) {
     }
 }
 
-int bs(int *arr, int start_pos, int end_pos, int data) {
+int binary_search(int *arr, int start_pos, int end_pos, int data) {
     if (start_pos >= end_pos) return arr[start_pos] > data ? start_pos : start_pos + 1;
     
     int middle_pos = (end_pos + start_pos) / 2, middle_val = arr[middle_pos];
     
     if (middle_val > data) {
-        return bs(arr, start_pos, middle_pos - 1, data);
+        return binary_search(arr, start_pos, middle_pos - 1, data);
     } else if (middle_val < data) {
-        return bs(arr, middle_pos + 1, end_pos, data);
+        return binary_search(arr, middle_pos + 1, end_pos, data);
     } else {
         return middle_pos + 1;
     }
