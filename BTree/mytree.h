@@ -24,6 +24,7 @@ void print_tree(BTree*);
 void tree_init(BTree**, int);
 void tree_free(BTree*);
 void validate(BTree*);
+void check_valid(BTree*, int);
 
 #endif
 

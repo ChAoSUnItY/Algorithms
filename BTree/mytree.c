@@ -13,7 +13,11 @@ int binary_search(int*, int, int, int);
 
 void insert(BTree **root, BTree *t, int data)
 {
-    int pos = binary_search(t->keys, 0, t->key_len, data);
+    if (t->key_len == 0) {
+        t->keys[t->key_len++] = data;
+        return;
+    }
+    int pos = binary_search(t->keys, 0, t->key_len-1, data);
 
     if (t->is_leaf) {
         // append
@@ -57,6 +61,32 @@ void split_child(BTree **root, BTree *t) {
         right->key_len = t->degree - 1;
     } else if (t->is_leaf) {
         // Leaf split
+        BTree* right;
+        tree_init(&right, t->degree);
+        int mid_val = t->keys[MID(t->degree)];
+        for (int i = MID(t->degree) + 1, j = 0; i < t->key_len ; i++, j++)
+            right->keys[j] = t->keys[i];
+        right->parent = t->parent;
+        right->is_root = false;
+        right->key_len = t->degree - 1;
+        right->parent_child = t->parent_child + 1;
+        // shift parent keys
+        for (int k = t->key_len; k > t->parent_child; k--)
+            t->parent->keys[k] = t->parent->keys[k-1];
+        // move mid_val to parent->key[parent_child]
+        t->parent->keys[t->parent_child] = mid_val;
+        t->key_len = t->degree - 1;
+        // shift parent_child (increment)
+        for (int k = t->children_len; k > t->parent_child + 1; k--) {
+            t->parent->children[k] = t->parent->children[k-1];
+            t->parent->children[k]->parent_child++;
+        }
+        t->parent->children[t->parent_child + 1] = right;
+
+        if (MAX_KEY(t->parent)) {
+            // Split
+            split_child(root, t->parent);
+        }
     }
 }
 
@@ -162,3 +192,8 @@ void tree_free(BTree *t)
     free(t->children);
     free(t);
 };
+
+void validate(BTree *root) {
+    check_valid(root, true);
+    printf("Validate pass\n");
+}

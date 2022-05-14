@@ -31,11 +31,17 @@ int main(int argc, char* argv[]) {
     int true_length = 0;
     /*int a[10] = {122,288,268,458,647,363,328,272,284,702};*/
 #ifdef DEBUG1
-    int a[10] = {1,5,2,8,9,7,6,3,4,10};
+    //int a[10] = {1,5,2,8,9,7,6,3,4,10};
+    int a[5] = {18,8,12,3,3};
     random_list = &a;
-    true_length = 10;
+    true_length = 5;
 #else
     true_length = random_list_gen(&random_list, (length > MAX_LENGTH) ? MAX_LENGTH : length, 0, range);
+    for (int i = 0 ; i < true_length ; i++) {
+        printf("%d ", random_list[i]);
+
+    }
+    printf("\n");
 #endif
 
     for (int i = 0; i < true_length; i++) {
@@ -45,24 +51,25 @@ int main(int argc, char* argv[]) {
         /*printf("==================\n");*/
         // traversal(t);
         /*printf("==================\n");*/
+        validate(t);
     }
 
 #ifdef DEBUG1
-    traversal(t);
-    printf("==============================\n");
-    delete(&t, t, 8); // delete cond 4
-    traversal(t);
-    printf("==============================\n");
-    delete(&t, t, 5); // delete cond 1
-    traversal(t);
-    printf("==============================\n");
-    delete(&t, t, 4); // delete cond 1
-    traversal(t);
-    printf("==============================\n");
+    // traversal(t);
+    // printf("==============================\n");
+    // delete(&t, t, 8); // delete cond 4
+    // traversal(t);
+    // printf("==============================\n");
+    // delete(&t, t, 5); // delete cond 1
+    // traversal(t);
+    // printf("==============================\n");
+    // delete(&t, t, 4); // delete cond 1
+    // traversal(t);
+    // printf("==============================\n");
 #else
     traversal(t);
 
-    delete(&t, t, 4);
+    // delete(&t, t, 4);
 
     tree_free(t);
 #endif
