@@ -5,11 +5,54 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define RIGHT_SIBLING(n) n->parent->key_len > n->parent_child ? n->parent->children[n->parent_child + 1] : NULL
+#define LEFT_SIBLING(n) n->parent_child > 0 ? n->parent->children[n->parent_child - 1] : NULL
+#define LAST_KEY(n) n->keys[n->key_len - 1]
+#define LAST_CHILD(n) n->children[n->children_len - 1]
+#define FIRST_KEY(n) n->keys[0]
+#define FIRST_CHILD(n) n->children[0]
+#define SWAP(a, b, typ) typ tmp = a; a = b; b = tmp;
 #define MAX_KEY(t) t->key_len == t->degree * 2 - 1
 #define MID(d) d - 1
 
 void _traversal(Node *);
-int binary_search(int*, int, int, int);
+int binary_search_insert_index(int*, int, int, int);
+
+void key_spare(BTree *t, int index) {
+    for (int k = t->key_len; k > index; k--)
+         t->keys[k] = t->keys[k-1];
+    t->key_len++;
+}
+
+void key_spare_multiple(BTree *t, int index, int count) {
+    for (int k = t->key_len + count - 1; k > index + count - 1; k--)
+        t->keys[k] = t->keys[k - count];
+    t->key_len += count;
+}
+
+void key_unspare(BTree *t, int index) {
+    for (int k = index; k < t->key_len -1; k++)
+        t->keys[k] = t->keys[k+1];
+    t->key_len--;
+}
+
+void child_spare(BTree *t, int index) {
+    for (int k = t->children_len; k > index; k--)
+         t->children[k] = t->children[k-1];
+    t->children_len++;
+}
+
+void child_spare_multiple(BTree *t, int index, int count) {
+    for (int k = t->key_len + count - 1; k > index + count - 1; k--)
+        t->children[k] = t->children[k - count];
+    t->children_len += count;
+}
+
+void child_unspare(BTree *t, int index) {
+    for (int k = index; k < t->children_len -1; k++)
+        t->children[k] = t->children[k+1];
+    t->children_len--;
+}
 
 void insert(BTree **root, BTree *t, int data)
 {
@@ -17,14 +60,12 @@ void insert(BTree **root, BTree *t, int data)
         t->keys[t->key_len++] = data;
         return;
     }
-    int pos = binary_search(t->keys, 0, t->key_len-1, data);
+    int pos = binary_search_insert_index(t->keys, 0, t->key_len-1, data);
 
     if (t->is_leaf) {
         // append
-        for (int k = t->key_len; k > pos; k--)
-            t->keys[k] = t->keys[k-1];
+        key_spare(t, pos);
         t->keys[pos] = data;
-        t->key_len++;
     } else {
         // search children node
         insert(root, t->children[pos], data);
@@ -90,23 +131,155 @@ void split_child(BTree **root, BTree *t) {
     }
 }
 
-int binary_search(int *arr, int start_pos, int end_pos, int data) {
+int binary_search_insert_index(int *arr, int start_pos, int end_pos, int data) {
     if (start_pos >= end_pos) return arr[start_pos] > data ? start_pos : start_pos + 1;
     
     int middle_pos = (end_pos + start_pos) / 2, middle_val = arr[middle_pos];
     
     if (middle_val > data) {
-        return binary_search(arr, start_pos, middle_pos - 1, data);
+        return binary_search_insert_index(arr, start_pos, middle_pos - 1, data);
     } else if (middle_val < data) {
-        return binary_search(arr, middle_pos + 1, end_pos, data);
+        return binary_search_insert_index(arr, middle_pos + 1, end_pos, data);
     } else {
         return middle_pos + 1;
     }
 }
 
-void delete (BTree **root, BTree *t, int data)
+BTree* find_right_most(BTree **root, BTree *t)
 {
-};
+    if (!t) {
+        printf("Got NULL node when searching nearest node.");
+        exit(-1);
+    }
+
+    if (!t->is_leaf) {
+        // search down
+        return find_right_most(root, t->children[t->children_len - 1]);
+    } else {
+        return t;
+    }
+}
+
+void delete_node(BTree **root, BTree *t, int data)
+{
+    if (!t) return;
+
+    int index = binary_search_insert_index(t->keys, 0, t->key_len, data);
+
+    if (t->keys[index - 1] == data) {
+        // deletion
+        if (t->is_leaf) {
+            // shift parent keys
+            for (int k = index - 1; k < t->key_len - 1; k++)
+                t->keys[k] = t->keys[k + 1];
+            t->key_len--;
+            resolve(root, t);
+        } else {
+            BTree *right_most_node = find_right_most(root, t->children[index - 1]);
+            SWAP(t->keys[index - 1], LAST_KEY(right_most_node), int);
+            right_most_node->key_len--;
+            resolve(root, right_most_node);        
+        }
+    } else {
+        if (t->is_leaf) {
+            // No match
+        } else {
+            delete_node(root, t->children[index], data);
+        }
+    }
+}
+
+void resolve(BTree **root, BTree *t)
+{
+    if (t->key_len >= t->degree - 1)
+        return;
+
+    if (t->is_root) {
+        borrow(root, t);
+    } else {
+        borrow(root, t);
+    }
+}
+
+void borrow(BTree **root, BTree *t)
+{
+    BTree *to_be_move;
+
+    if ((to_be_move = LEFT_SIBLING(t)) && to_be_move->key_len > t->degree - 1) {
+        // move left last element
+        int removed_data = LAST_KEY(to_be_move);
+        to_be_move->key_len--;
+        int append_data = t->parent->keys[to_be_move->parent_child];
+        t->parent->keys[to_be_move->parent_child] = removed_data;
+        key_spare(t, 0);
+        t->keys[0] = append_data;
+    } else if ((to_be_move = RIGHT_SIBLING(t)) && to_be_move->key_len > t->degree - 1) {
+        // move right last element
+        int removed_data = FIRST_KEY(to_be_move);
+        key_unspare(to_be_move, 0);
+        int append_data = t->parent->keys[t->parent_child];
+        t->parent->keys[t->parent_child] = removed_data;
+        t->keys[t->key_len++] = append_data;
+    } else {
+        // merge
+        merge_child(root, t);
+        resolve(root, t->parent);
+    }
+}
+
+void merge_child(BTree **root, BTree *t)
+{
+    int borrowed_key;
+    BTree *left, *right;
+
+    if ((left = LEFT_SIBLING(t))) {
+        borrowed_key = t->parent->keys[t->parent_child - 1];
+        key_unspare(t->parent, t->parent_child - 1);
+    
+        right = t;
+        key_spare_multiple(t, 0, left->key_len);
+
+        for (int i = 0; i < left->key_len; i++)
+            right->keys[i] = left->keys[i];
+    
+        for (int i = t->parent_child; i < t->parent->children_len; i++)
+            t->parent->children[i]->parent_child--;
+    
+        child_unspare(t, left->parent_child);
+        
+        child_spare_multiple(right, 0, left->children_len);
+        
+        for (int i = 0; i < left->children_len; i++)
+            right->children[i] = left->children[i];
+
+        for (int i = 0; i < right->children_len; i++)
+            right->children[i]->parent_child = i;
+
+        tree_free(left, false);
+    } else {
+        borrowed_key = t->parent->keys[t->parent_child];
+        key_unspare(t->parent, t->parent_child);
+    
+        left = t;
+        right = RIGHT_SIBLING(t);
+
+        for (int i = 0; i < left->key_len; i++)
+            left->keys[t->key_len - 1 + i] = right->keys[i];
+
+        for (int i = t->parent_child + 1; i <= t->children_len; i++)
+            t->parent->children[i]->parent_child--;
+        
+        child_unspare(t, right->children_len);
+
+        for (int i = 0; i < right->children_len; i++)
+            left->children[left->children_len + i] = right->children[i];
+
+        for (int i = 0; i < left->children_len; i++)
+            left->children[i]->parent_child = i;
+    
+        tree_free(right, false);
+    }
+}
 
 void traversal(BTree *t)
 {
@@ -135,9 +308,11 @@ void _traversal(Node *node) {
             tail = append_node(tail, current_tree->children[i]);
         }
 
-        node = node->next;
-        current_tree = node->value;
-        current_tree->traversal_id = now_traversal_id++;
+        if (node->next) {
+            node = node->next;
+            current_tree = node->value;
+            current_tree->traversal_id = now_traversal_id++;
+        } else break;
     }
 }
 
@@ -182,12 +357,13 @@ void tree_init(BTree **tp, int degree)
     t->traversal_id = -1;
 };
 
-void tree_free(BTree *t)
+void tree_free(BTree *t, bool free_child)
 {
     free(t->keys);
     
-    for (int i = 0; i < t->degree; i++)
-        tree_free(t->children[i]);
+    if (free_child)
+        for (int i = 0; i < t->degree; i++)
+            tree_free(t->children[i], free_child);
     
     free(t->children);
     free(t);

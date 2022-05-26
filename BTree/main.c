@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
 #ifdef DEBUG1
     //int a[10] = {1,5,2,8,9,7,6,3,4,10};
     int a[5] = {18,8,12,3,3};
-    random_list = &a;
+    random_list = a;
     true_length = 5;
 #else
     true_length = random_list_gen(&random_list, (length > MAX_LENGTH) ? MAX_LENGTH : length, 0, range);
@@ -55,23 +55,23 @@ int main(int argc, char* argv[]) {
     }
 
 #ifdef DEBUG1
-    // traversal(t);
-    // printf("==============================\n");
-    // delete(&t, t, 8); // delete cond 4
-    // traversal(t);
-    // printf("==============================\n");
-    // delete(&t, t, 5); // delete cond 1
-    // traversal(t);
-    // printf("==============================\n");
-    // delete(&t, t, 4); // delete cond 1
-    // traversal(t);
-    // printf("==============================\n");
+    traversal(t);
+    printf("==============================\n");
+    delete_node(&t, t, 8); // delete cond 4
+    traversal(t);
+    printf("==============================\n");
+    delete_node(&t, t, 5); // delete cond 1
+    traversal(t);
+    printf("==============================\n");
+    delete_node(&t, t, 4); // delete cond 1
+    traversal(t);
+    printf("==============================\n");
 #else
     traversal(t);
 
     // delete(&t, t, 4);
 
-    tree_free(t);
+    tree_free(t, true);
 #endif
 }
 

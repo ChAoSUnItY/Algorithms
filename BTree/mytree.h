@@ -18,11 +18,14 @@ typedef struct btree {
 
 void insert(BTree**, BTree*, int);
 void split_child(BTree**, BTree*);
-void delete(BTree**, BTree*, int);
+void delete_node(BTree**, BTree*, int);
+void resolve(BTree**, BTree*);
+void borrow(BTree**, BTree*);
+void merge_child(BTree**, BTree*);
 void traversal(BTree*);
 void print_tree(BTree*);
 void tree_init(BTree**, int);
-void tree_free(BTree*);
+void tree_free(BTree*, bool);
 void validate(BTree*);
 void check_valid(BTree*, int);
 
